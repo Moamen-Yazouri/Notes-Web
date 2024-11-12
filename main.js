@@ -1,43 +1,59 @@
 const notesContainer = document.querySelector(".notes-container");
 const addBtn = document.querySelector(".add");
 let counter = 0;
-if(localStorage.length > 0) {
-    for(let i = 0; i < localStorage.length; i++) {
-        let note = document.createElement("p");
-        let noteId = localStorage.key(i);
-        let textContent = localStorage.getItem(noteId);
-        note.className = "input-box";
-        note.setAttribute("data-count", noteId.match(/\d+/)[0]);
-        note.setAttribute("contenteditable", "true");
-        note.textContent = textContent;
-        let img = document.createElement("img");
-        img.src = "images/delete.png";
-        note.appendChild(img);
-        notesContainer.appendChild(note);
+
+if (localStorage.length > 0) {
+    counter = localStorage.length;
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const noteId = key.match(/\d+/)[0];
+        const inputBox = createNoteElement(noteId, localStorage.getItem(key));
+        notesContainer.appendChild(inputBox);
     }
 }
-addBtn.addEventListener("click", () => {
-    let note = document.createElement("p");
-    note.className = "input-box";
-    note.setAttribute("data-count", ++counter);
-    note.setAttribute("contenteditable", "true");
-    let img = document.createElement("img");
+
+function createNoteElement(noteId, content = "") {
+    const inputBox = document.createElement("div");
+    inputBox.className = "input-box";
+    inputBox.setAttribute("data-count", noteId);
+
+    const note = document.createElement("textarea");
+    note.className = "note";
+    note.textContent = content;
+    note.placeholder = "Press Edit to Write";
+    inputBox.appendChild(note);
+
+    const img = document.createElement("img");
     img.src = "images/delete.png";
-    note.appendChild(img);
-    notesContainer.appendChild(note);
+    inputBox.appendChild(img);
 
-    window.localStorage.setItem(`note${counter}`, note.textContent);
+    const editBtn = document.createElement("button");
+    editBtn.className = "edit-btn";
+    editBtn.textContent = "Edit";
+    inputBox.appendChild(editBtn);
+
+    // Add event listeners for note interactions
     note.addEventListener("blur", () => {
-        const noteId = note.getAttribute("data-count");
-        window.localStorage.setItem(`note${noteId}`, note.textContent);
+        localStorage.setItem(`note${noteId}`, note.value);
+    });
 
-    })
+    editBtn.addEventListener("click", () => {
+        const isEditable = note.getAttribute("contenteditable") === "true";
+        note.focus();
+    });
+
+    img.addEventListener("click", () => {
+        localStorage.removeItem(`note${noteId}`);
+        inputBox.remove();
+    });
+
+    return inputBox;
+}
+
+
+addBtn.addEventListener("click", () => {
+    const noteId = ++counter;
+    const inputBox = createNoteElement(noteId);
+    notesContainer.appendChild(inputBox);
+    localStorage.setItem(`note${noteId}`, "");
 });
-notesContainer.addEventListener("click", (e) => {
-    if(e.target.tagName === "IMG") {
-        const note = e.target.parentElement;
-        const noteId = note.getAttribute("data-count");
-        note.remove();
-        localStorage.removeItem(`note${noteId}`)
-    }
-})
