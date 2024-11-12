@@ -32,7 +32,6 @@ function createNoteElement(noteId, content = "") {
     editBtn.textContent = "Edit";
     inputBox.appendChild(editBtn);
 
-    // Add event listeners for note interactions
     note.addEventListener("blur", () => {
         localStorage.setItem(`note${noteId}`, note.value);
     });
